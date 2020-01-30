@@ -2,6 +2,23 @@ import React from 'react';
 import letterValues from '../letter-values.json'; 
 import allowedWords from '../words.json'; 
 
+const boxes = {
+    width:'100px',
+    height:'100px',
+    border: '1px solid black',
+    display: 'inline-block',
+  };
+
+const createStyle = {
+    padding: '10px',
+    display: 'inline-block',
+    'font-size' : '75px',
+};
+
+const changeColour = {
+    color: 'red',
+};
+  
 export default class WordMaster extends React.Component
 {
     // Read in the letters and their values, and the words
@@ -236,13 +253,35 @@ export default class WordMaster extends React.Component
         var scores = this.createScoresDict(matchingIndexes, currentList);
         var highestScoringWord = this.getHighestScoringWord(scores, dict, nLetters);
         
+        var validWords = []
+
+        for(var i in matchingIndexes)
+        {
+            validWords.push(currentList[matchingIndexes[i]])
+        }
+
         if(highestScoringWord == null)
         {
             return <h1>There are no valid words for the hand {currentLetters.toString().replace(/,/g, '')}</h1> 
         }
         else
         {
-            return <h1>For the hand: {currentLetters.toString().replace(/,/g, '')}, you should play the word {highestScoringWord} for {scores[highestScoringWord]} points.</h1>
+            //return <h1>For the hand: {currentLetters.toString().replace(/,/g, '')}, you should play the word {highestScoringWord} for {scores[highestScoringWord]} points.</h1>
+            return (
+            <div>
+                <h1>For the hand: </h1>
+                    {currentLetters.map(letter => <div style = {createStyle}><li style={boxes}>{letter}</li></div>)}
+                <p>There are {matchingIndexes.length} possible words: </p>
+                
+                {validWords.map(word => <li>{word}</li>)}
+                
+                
+                <p> The highest scoring word is <div style = {changeColour}>{highestScoringWord}</div>for {scores[highestScoringWord]} points.</p>
+                
+            </div>
+            
+            
+            );
         }
         
         
