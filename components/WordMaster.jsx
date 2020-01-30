@@ -2,6 +2,7 @@ import React from 'react';
 import letterValues from '../letter-values.json'; 
 import allowedWords from '../words.json'; 
 
+// Styling to create "tiles" on the webpage
 const boxes = {
     width:'100px',
     height:'100px',
@@ -21,7 +22,7 @@ const changeColour = {
   
 export default class WordMaster extends React.Component
 {
-    // Read in the letters and their values, and the words
+    // Read in the available letters and their values and store these in a dictionary
     getLetters()
     {
         var dict = new Object();
@@ -41,6 +42,8 @@ export default class WordMaster extends React.Component
 
         for(var i in allowedWords)
         {
+            // Select all the words from words.json which are either the same length or less than the 
+            // random number of tiles selected
             if(allowedWords[i].length <= nLetters)
             {
                 currentList.push(allowedWords[i])
@@ -59,6 +62,7 @@ export default class WordMaster extends React.Component
         return newLetter;
     }
 
+    // Create a hand of n random letters 
     getHand(n, letterDict)
     {
         var newLetter = [];
@@ -71,11 +75,13 @@ export default class WordMaster extends React.Component
         return currentHand;
     }
 
-    // Shows how many times each letter appears in the current hand
+    // Shows how many times each letter appears in the current hand to ensure the correct words are being 
+    // selected
     getLetterOccurances(currentLetters)
     {
         var letterCount = new Object();
 
+        // Initalise the dictionary keys with a value of 1 and increment this by 1 if the same key is seen again
         for(var i in currentLetters)
         {
             if(!(currentLetters[i] in letterCount))
@@ -94,10 +100,12 @@ export default class WordMaster extends React.Component
     // Create all possible unique combinations of the letters and search for words which contain them
     getLetterCombinations(currentLetters, letterCount, currentList)
     {
+        // Convert the array of search letters to a string and remove the commas to ensure correct formatting
         var searchLetters = currentLetters.toString().replace(/,/g, "");
         var temp = 0;  
         var combinations = [];  
 
+        // Recursively go through all of the possible combinations for the current letters
         for(var i = 0; i < searchLetters.length; i++) 
         {  
             // Adds each subset of the word to the combinations array
@@ -111,13 +119,15 @@ export default class WordMaster extends React.Component
             }  
         }  
 
+        // Sort all of the combinations found in order of word length for readability
         combinations.sort(function(a, b){return a.length - b.length}); 
 
         var matchingIndexes = []
 
         for(var i in combinations)
         {
-            // Add whitespaces to the string and then replace these with (?=.*) to specify that all of the letters must be included
+            // Add whitespaces to the string and then replace these with (?=.*) to specify that all of the 
+            // letters must be included in the regular expression
             var start = "(?=.*";
             var end = ")";
             searchLetters = combinations[i].split('').join(' ').replace(/\s/g, ")(?=.*");
@@ -145,6 +155,8 @@ export default class WordMaster extends React.Component
                         var newLetterCount = new Object();
                         var tempCurrentLetters = currentList[j].replace(/''/g, "[]").toLowerCase();
                         
+                        // Create a temporary dictionary for the current letters which shows how many times
+                        // each of these letters appear in the current combination
                         for(var i in tempCurrentLetters)
                         {
                             if(!(tempCurrentLetters[i] in newLetterCount))
@@ -158,7 +170,9 @@ export default class WordMaster extends React.Component
                         }
     
                         var doubleLetter = false;
-
+                        
+                        // Check that the number of occurances of each letter in the temporary dictionary are
+                        // the same as in the initial selected letters.
                         for(var key in letterCount)
                         {
                             
@@ -228,7 +242,8 @@ export default class WordMaster extends React.Component
             array.push(temp);
         }
 
-
+        // Store the value of the current chosen letters and calculate the total score based on the 
+        // provided specifications.
         for(var i in array)
         {
             var wordValue = 0
@@ -252,6 +267,7 @@ export default class WordMaster extends React.Component
 
         }
 
+        // Check that a valid word was found, else return null.
         if(this.isEmpty(scores) == false)
         {
             var highestScoringWord = Object.keys(scores).reduce(function(a, b){return scores[a] > scores[b]? a : b});            
@@ -285,7 +301,8 @@ export default class WordMaster extends React.Component
         var currentList = this.getWords(nLetters);
         var currentLetters = this.getHand(nLetters, dict);
 
-        // Check that the current hand does not contain any undefined letters
+        // Check that the current hand does not contain any undefined letters.
+        // Redraw the hand if it does.
         while(currentLetters.includes(undefined))
         {
             currentLetters = this.getHand(nLetters, dict);
@@ -330,7 +347,7 @@ export default class WordMaster extends React.Component
                     
                     
                     <h2> The highest scoring word is <div style = {changeColour}>{highestScoringWord}</div>for {scores[highestScoringWord]} points.</h2>
-                    <h2> The total score for all possible words in the current hand is <div style = {changeColour}>{totalScore}</div></h2>
+                    <h2> The total score for all valid words in the current hand is <div style = {changeColour}>{totalScore}</div>points.</h2>
                 </div>
             );
         }        
