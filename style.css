@@ -1,7 +1,7 @@
-h1{
-    color: red;
-}
-
 .main{
     text-align: center;
+}
+
+.main h1{
+    color: red;
 }

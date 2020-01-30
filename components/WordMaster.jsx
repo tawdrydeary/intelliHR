@@ -201,7 +201,6 @@ export default class WordMaster extends React.Component
             
             for(var j = 0; j < array[i].length; j++)
             {
-                //console.log("Array:", array[i][j]);
                 var letterValue = dict[array[i][j].toLowerCase()];
                 wordValue += letterValue;
             }
@@ -216,7 +215,6 @@ export default class WordMaster extends React.Component
             {
                 scores[key] = wordValue * nLetters;
             }
-            //console.log(key, ":", wordValue);
 
         }
 
@@ -233,6 +231,18 @@ export default class WordMaster extends React.Component
 
     }
 
+    // Get the total score for all of the valid combinations in the current hand
+    getHandScore(scores)
+    {
+        var totalScore = 0;
+
+        for(var i in scores)
+        {
+            totalScore += scores[i];
+        }
+
+        return totalScore;
+    }
 
     render()
     {
@@ -253,39 +263,43 @@ export default class WordMaster extends React.Component
         var scores = this.createScoresDict(matchingIndexes, currentList);
         var highestScoringWord = this.getHighestScoringWord(scores, dict, nLetters);
         
-        var validWords = []
+        var validWords = [];
+        var totalScore = this.getHandScore(scores);
+        
+        var keys = Object.keys(scores);
 
-        for(var i in matchingIndexes)
+        for(var key in keys)
         {
-            validWords.push(currentList[matchingIndexes[i]])
+            validWords.push(keys[key])
         }
 
         if(highestScoringWord == null)
         {
-            return <h1>There are no valid words for the hand {currentLetters.toString().replace(/,/g, '')}</h1> 
+            return (
+                <div>
+                    <h2>There are no matches for the hand: </h2>
+                    {currentLetters.map(letter => <div style = {createStyle}><li style={boxes}>{letter}</li></div>)}
+
+                </div>
+                
+            ); 
         }
         else
         {
-            //return <h1>For the hand: {currentLetters.toString().replace(/,/g, '')}, you should play the word {highestScoringWord} for {scores[highestScoringWord]} points.</h1>
             return (
-            <div>
-                <h1>For the hand: </h1>
-                    {currentLetters.map(letter => <div style = {createStyle}><li style={boxes}>{letter}</li></div>)}
-                <p>There are {matchingIndexes.length} possible words: </p>
-                
-                {validWords.map(word => <li>{word}</li>)}
-                
-                
-                <p> The highest scoring word is <div style = {changeColour}>{highestScoringWord}</div>for {scores[highestScoringWord]} points.</p>
-                
-            </div>
-            
-            
+                <div>
+                    <h2>For the hand: </h2>
+                        {currentLetters.map(letter => <div style = {createStyle}><li style={boxes}>{letter}</li></div>)}
+                    <h2>There are {matchingIndexes.length} possible words: </h2>
+                    
+                    {validWords.map(word => <li>{word}</li>)}
+                    
+                    
+                    <h2> The highest scoring word is <div style = {changeColour}>{highestScoringWord}</div>for {scores[highestScoringWord]} points.</h2>
+                    <h2> The total score for the hand is <div style = {changeColour}>{totalScore}</div></h2>
+                </div>
             );
-        }
-        
-        
-        
+        }        
     }
 };
 
