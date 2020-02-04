@@ -18,6 +18,7 @@ const createStyle = {
 
 const changeColour = {
     color: 'red',
+    'textDecoration': 'none',
 };
   
 export default class WordMaster extends React.Component
@@ -124,7 +125,7 @@ export default class WordMaster extends React.Component
 
         var matchingIndexes = []
 
-        for(var i in combinations)
+        for(var i = 0; i < combinations.length; i++)
         {
             // Add whitespaces to the string and then replace these with (?=.*) to specify that all of the 
             // letters must be included in the regular expression
@@ -157,18 +158,18 @@ export default class WordMaster extends React.Component
                         
                         // Create a temporary dictionary for the current letters which shows how many times
                         // each of these letters appear in the current combination
-                        for(var i in tempCurrentLetters)
+                        for(var index in tempCurrentLetters)
                         {
-                            if(!(tempCurrentLetters[i] in newLetterCount))
+                            if(!(tempCurrentLetters[index] in newLetterCount))
                             {        
-                                newLetterCount[tempCurrentLetters[i]] = 1;
+                                newLetterCount[tempCurrentLetters[index]] = 1;
                             }
                             else
                             {
-                                newLetterCount[tempCurrentLetters[i]] += 1;
+                                newLetterCount[tempCurrentLetters[index]] += 1;
                             }
                         }
-    
+
                         var doubleLetter = false;
                         
                         // Check that the number of occurances of each letter in the temporary dictionary are
@@ -195,6 +196,7 @@ export default class WordMaster extends React.Component
                 }
             }
         }
+
         return matchingIndexes;
     }
 
@@ -281,25 +283,26 @@ export default class WordMaster extends React.Component
 
     }
 
-    // Get the total score for all of the valid combinations in the current hand
-    getHandScore(scores)
+    // Get the total score for the words that can be formed with the current hand
+    getTotalScore(score)
     {
         var totalScore = 0;
 
-        for(var i in scores)
+        for(var i in score)
         {
-            totalScore += scores[i];
+            totalScore += score[i]
         }
-
+        
         return totalScore;
     }
 
     render()
     {
+        var highestScoringWord = "temp";
         var nLetters = Math.round(Math.random() * 6 + 2); 
         var dict = this.getLetters();
-        var currentList = this.getWords(nLetters);
-        var currentLetters = this.getHand(nLetters, dict);
+        var currentLetters = this.getHand(nLetters, dict);//['a', 'a', 'a', 'a', 'b']
+        var totalScore = [];
 
         // Check that the current hand does not contain any undefined letters.
         // Redraw the hand if it does.
@@ -309,27 +312,48 @@ export default class WordMaster extends React.Component
             currentLetters.includes(undefined);
         }
 
-        var letterCount = this.getLetterOccurances(currentLetters);
-        var matchingIndexes = this.getLetterCombinations(currentLetters, letterCount, currentList);
-        var scores = this.createScoresDict(matchingIndexes, currentList);
-        var highestScoringWord = this.getHighestScoringWord(scores, dict, nLetters);
-        
-        var validWords = [];
-        var totalScore = this.getHandScore(scores);
-        
-        var keys = Object.keys(scores);
+        var initialHand = [...currentLetters];
 
-        for(var key in keys)
+        var bestWords = [];
+        // // How many possible combinations there actually are
+        // var actualMatches = [...new Set(matchingIndexes)];
+
+        while(highestScoringWord != null)
         {
-            validWords.push(keys[key])
+            var letterCount = this.getLetterOccurances(currentLetters);
+            var currentList = this.getWords(nLetters);
+            var matchingIndexes = this.getLetterCombinations(currentLetters, letterCount, currentList);
+            var scores = this.createScoresDict(matchingIndexes, currentList);
+            var highestScoringWord = this.getHighestScoringWord(scores, dict, nLetters);
+
+    
+            if(highestScoringWord != null)
+            {
+                bestWords.push(highestScoringWord);
+                totalScore.push(scores[highestScoringWord])
+
+                for(var i = 0; i < highestScoringWord.length; i++) // the letters in the highest scoring word
+                {
+                    if(currentLetters.includes(highestScoringWord[i].toLowerCase())) // any of the letters in the current hand match (could remove)
+                    {
+                        var index = currentLetters.indexOf(highestScoringWord[i].toLowerCase())
+                        currentLetters.splice(index, 1);
+                    }
+                }    
+            }
+            nLetters = currentLetters.length; 
         }
 
-        if(highestScoringWord == null)
+        console.log(bestWords, this.getTotalScore(totalScore));
+
+        var finalScore = this.getTotalScore(totalScore);
+
+        if(bestWords == 0) 
         {
             return (
                 <div>
                     <h2>There are no matches for the current tiles. </h2>
-                    {currentLetters.map(letter => <div style = {createStyle}><li style={boxes}>{letter}</li></div>)}
+                    {initialHand.map(letter => <div style = {createStyle}><li style={boxes}>{letter}</li></div>)}
 
                 </div>
                 
@@ -339,15 +363,15 @@ export default class WordMaster extends React.Component
         {
             return (
                 <div>
-                    <h2>For the current tiles </h2>
-                        {currentLetters.map(letter => <div style = {createStyle}><li style={boxes}>{letter}</li></div>)}
-                    <h2>There are {validWords.length} possible words: </h2>
-                    
-                    {validWords.map(word => <li>{word}</li>)}
+                    <h2>Current Hand</h2>
+                        {initialHand.map(letter => <div style = {createStyle}><li style={boxes}>{letter}</li></div>)}
                     
                     
-                    <h2> The highest scoring word is <div style = {changeColour}>{highestScoringWord}</div>for {scores[highestScoringWord]} points.</h2>
-                    <h2> The total score for all valid words in the current hand is <div style = {changeColour}>{totalScore}</div>points.</h2>
+                    
+                    <h2> The optimal word combination for this hand is <div style = {changeColour}>                    
+                    {bestWords.map(word => <li>{word}</li>)}
+
+                    </div>for {finalScore} points.</h2>
                 </div>
             );
         }        
