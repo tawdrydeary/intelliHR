@@ -312,11 +312,9 @@ export default class WordMaster extends React.Component
             currentLetters.includes(undefined);
         }
 
+        // Copy of the initial hand
         var initialHand = [...currentLetters];
-
         var bestWords = [];
-        // // How many possible combinations there actually are
-        // var actualMatches = [...new Set(matchingIndexes)];
 
         while(highestScoringWord != null)
         {
@@ -325,26 +323,24 @@ export default class WordMaster extends React.Component
             var matchingIndexes = this.getLetterCombinations(currentLetters, letterCount, currentList);
             var scores = this.createScoresDict(matchingIndexes, currentList);
             var highestScoringWord = this.getHighestScoringWord(scores, dict, nLetters);
-
     
             if(highestScoringWord != null)
             {
                 bestWords.push(highestScoringWord);
                 totalScore.push(scores[highestScoringWord])
 
-                for(var i = 0; i < highestScoringWord.length; i++) // the letters in the highest scoring word
+                for(var i = 0; i < highestScoringWord.length; i++) // For each of the letters in the highest scoring word
                 {
-                    if(currentLetters.includes(highestScoringWord[i].toLowerCase())) // any of the letters in the current hand match (could remove)
+                    if(currentLetters.includes(highestScoringWord[i].toLowerCase())) // If any of the letters in the current hand match 
                     {
                         var index = currentLetters.indexOf(highestScoringWord[i].toLowerCase())
-                        currentLetters.splice(index, 1);
+                        currentLetters.splice(index, 1); // Remove the letter at this index to update the current hand to exclude the already used letters
                     }
                 }    
             }
+            // Update number of letters in the hand to be equal to the inital hand minus any letters that were used in the first optimal word
             nLetters = currentLetters.length; 
         }
-
-        console.log(bestWords, this.getTotalScore(totalScore));
 
         var finalScore = this.getTotalScore(totalScore);
 
@@ -365,13 +361,11 @@ export default class WordMaster extends React.Component
                 <div>
                     <h2>Current Hand</h2>
                         {initialHand.map(letter => <div style = {createStyle}><li style={boxes}>{letter}</li></div>)}
-                    
-                    
-                    
-                    <h2> The optimal word combination for this hand is <div style = {changeColour}>                    
-                    {bestWords.map(word => <li>{word}</li>)}
 
-                    </div>for {finalScore} points.</h2>
+                        <h2> The optimal word combination for this hand is 
+                        <div style = {changeColour}>                    
+                            {bestWords.map(word => <li>{word}</li>)}
+                        </div>for {finalScore} points.</h2>
                 </div>
             );
         }        
